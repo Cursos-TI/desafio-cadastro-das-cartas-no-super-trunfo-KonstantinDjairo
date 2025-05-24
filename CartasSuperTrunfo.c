@@ -3,124 +3,114 @@
 #include <stdlib.h>
 
 #define MAX_LEN 100
+#define NUM_CARTAS 2
+
+typedef struct {
+    char estado[3];
+    char codigo[4];
+    char nome[MAX_LEN];
+    unsigned long populacao;
+    float area;
+    float pib;              // em bilhões
+    int pontosTuristicos;
+    float densidade;        // hab/km²
+    float pibPerCapita;     // reais
+    float superPoder;
+} Carta;
+
+void lerString(const char *prompt, char *dest, size_t maxlen) {
+    char buffer[MAX_LEN];
+    printf("%s", prompt);
+    if (!fgets(buffer, sizeof(buffer), stdin)) return;
+    buffer[strcspn(buffer, "\n")] = '\0';
+    strncpy(dest, buffer, maxlen - 1);
+    dest[maxlen - 1] = '\0';
+}
+
+unsigned long lerULong(const char *prompt) {
+    char buffer[MAX_LEN];
+    printf("%s", prompt);
+    if (!fgets(buffer, sizeof(buffer), stdin)) return 0;
+    return strtoul(buffer, NULL, 10);
+}
+
+float lerFloat(const char *prompt) {
+    char buffer[MAX_LEN];
+    printf("%s", prompt);
+    if (!fgets(buffer, sizeof(buffer), stdin)) return 0.0f;
+    return strtof(buffer, NULL);
+}
+
+int lerInt(const char *prompt) {
+    char buffer[MAX_LEN];
+    printf("%s", prompt);
+    if (!fgets(buffer, sizeof(buffer), stdin)) return 0;
+    return atoi(buffer);
+}
+
+void exibirComparacao(const char *atributo, float valor1, float valor2, int menorVence) {
+    int vencedor = 0;
+    if ((menorVence && valor1 < valor2) || (!menorVence && valor1 > valor2))
+        vencedor = 1;
+    else
+        vencedor = 2;
+
+    printf("%-25s Carta %d venceu\n", atributo, vencedor);
+}
 
 int main(void) {
-    char buffer[MAX_LEN];
+    Carta cartas[NUM_CARTAS];
 
-    /* Dados da Carta 1 */
-    char estado1[3];
-    char codigo1[4];
-    char nome1[MAX_LEN];
-    int pop1;
-    float area1, pib1;
-    int pontos1;
-    float dens1, percap1;
+    /* Leitura dos dados */
+    for (int i = 0; i < NUM_CARTAS; i++) {
+        printf("\n--- Dados da Carta %d ---\n", i + 1);
+        lerString("Estado (2 letras): ", cartas[i].estado, sizeof(cartas[i].estado));
+        lerString("Código da Carta:    ", cartas[i].codigo, sizeof(cartas[i].codigo));
+        lerString("Nome da Cidade:     ", cartas[i].nome, sizeof(cartas[i].nome));
+        cartas[i].populacao      = lerULong("População:          ");
+        cartas[i].area           = lerFloat("Área (km²):         ");
+        cartas[i].pib            = lerFloat("PIB (bilhões R$):   ");
+        cartas[i].pontosTuristicos = lerInt("Pontos Turísticos:  ");
+    }
 
-    printf("\n--- Carta 1 ---\n");
+    /* Cálculo de densidade, PIB per capita e Super Poder */
+    for (int i = 0; i < NUM_CARTAS; i++) {
+        cartas[i].densidade    = cartas[i].populacao / cartas[i].area;
+        cartas[i].pibPerCapita = (cartas[i].pib * 1e9f) / cartas[i].populacao;
+        cartas[i].superPoder =
+            (float)cartas[i].populacao
+          + cartas[i].area
+          + cartas[i].pib
+          + (float)cartas[i].pontosTuristicos
+          + cartas[i].pibPerCapita
+          + (1.0f / cartas[i].densidade);
+    }
 
-    printf("Estado: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0';
-    strncpy(estado1, buffer, 2); estado1[2] = '\0';
+    /* Exibição dos dados completos */
+    printf("\n=== Resumo das Cartas ===\n");
+    for (int i = 0; i < NUM_CARTAS; i++) {
+        printf("\nCarta %d:\n", i + 1);
+        printf(" Estado:                  %s\n", cartas[i].estado);
+        printf(" Código:                  %s\n", cartas[i].codigo);
+        printf(" Nome da Cidade:          %s\n", cartas[i].nome);
+        printf(" População:               %lu\n", cartas[i].populacao);
+        printf(" Área:                    %.2f km²\n", cartas[i].area);
+        printf(" PIB:                     %.2f bilhões de reais\n", cartas[i].pib);
+        printf(" Pontos Turísticos:       %d\n",  cartas[i].pontosTuristicos);
+        printf(" Densidade Populacional:  %.2f hab/km²\n", cartas[i].densidade);
+        printf(" PIB per Capita:          %.2f reais\n", cartas[i].pibPerCapita);
+        printf(" Super Poder:             %.2f\n", cartas[i].superPoder);
+    }
 
-    printf("Código: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0';
-    strncpy(codigo1, buffer, 3); codigo1[3] = '\0';
-
-    printf("Nome da Cidade: ");
-    fgets(nome1, sizeof(nome1), stdin);
-    nome1[strcspn(nome1, "\n")] = '\0';
-
-    printf("População: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    pop1 = atoi(buffer);
-
-    printf("Área (km²): ");
-    fgets(buffer, sizeof(buffer), stdin);
-    area1 = atof(buffer);
-
-    printf("PIB (bilhões): ");
-    fgets(buffer, sizeof(buffer), stdin);
-    pib1 = atof(buffer);
-
-    printf("Número de Pontos Turísticos: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    pontos1 = atoi(buffer);
-
-    /* Cálculos */
-    dens1 = pop1 / area1;
-    percap1 = (pib1 * 1e9f) / pop1;
-
-    /* Dados da Carta 2 */
-    char estado2[3];
-    char codigo2[4];
-    char nome2[MAX_LEN];
-    int pop2;
-    float area2, pib2;
-    int pontos2;
-    float dens2, percap2;
-
-    printf("\n--- Carta 2 ---\n");
-
-    printf("Estado: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0';
-    strncpy(estado2, buffer, 2); estado2[2] = '\0';
-
-    printf("Código: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0';
-    strncpy(codigo2, buffer, 3); codigo2[3] = '\0';
-
-    printf("Nome da Cidade: ");
-    fgets(nome2, sizeof(nome2), stdin);
-    nome2[strcspn(nome2, "\n")] = '\0';
-
-    printf("População: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    pop2 = atoi(buffer);
-
-    printf("Área (km²): ");
-    fgets(buffer, sizeof(buffer), stdin);
-    area2 = atof(buffer);
-
-    printf("PIB (bilhões): ");
-    fgets(buffer, sizeof(buffer), stdin);
-    pib2 = atof(buffer);
-
-    printf("Número de Pontos Turísticos: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    pontos2 = atoi(buffer);
-
-    /* Cálculos */
-    dens2 = pop2 / area2;
-    percap2 = (pib2 * 1e9f) / pop2;
-
-    /* Exibição do Resumo */
-    printf("\n=== Resumo das Cartas ===\n\n");
-
-    printf("Carta 1:\n");
-    printf(" Estado: %s\n", estado1);
-    printf(" Código: %s\n", codigo1);
-    printf(" Nome da Cidade: %s\n", nome1);
-    printf(" População: %d\n", pop1);
-    printf(" Área: %.2f km²\n", area1);
-    printf(" PIB: %.2f bilhões de reais\n", pib1);
-    printf(" Pontos Turísticos: %d\n", pontos1);
-    printf(" Densidade Populacional: %.2f hab/km²\n", dens1);
-    printf(" PIB per Capita: %.2f reais\n\n", percap1);
-
-    printf("Carta 2:\n");
-    printf(" Estado: %s\n", estado2);
-    printf(" Código: %s\n", codigo2);
-    printf(" Nome da Cidade: %s\n", nome2);
-    printf(" População: %d\n", pop2);
-    printf(" Área: %.2f km²\n", area2);
-    printf(" PIB: %.2f bilhões de reais\n", pib2);
-    printf(" Pontos Turísticos: %d\n", pontos2);
-    printf(" Densidade Populacional: %.2f hab/km²\n", dens2);
-    printf(" PIB per Capita: %.2f reais\n", percap2);
+    /* Comparações */
+    printf("\n=== Comparação de Cartas ===\n\n");
+    exibirComparacao("População:",            cartas[0].populacao,    cartas[1].populacao,    0);
+    exibirComparacao("Área:",                 cartas[0].area,         cartas[1].area,         0);
+    exibirComparacao("PIB:",                  cartas[0].pib,          cartas[1].pib,          0);
+    exibirComparacao("Pontos Turísticos:",    cartas[0].pontosTuristicos, cartas[1].pontosTuristicos, 0);
+    exibirComparacao("Densidade Populacional:", cartas[0].densidade,   cartas[1].densidade,    1); // menor vence
+    exibirComparacao("PIB per Capita:",       cartas[0].pibPerCapita, cartas[1].pibPerCapita, 0);
+    exibirComparacao("Super Poder:",          cartas[0].superPoder,   cartas[1].superPoder,   0);
 
     return 0;
 }
